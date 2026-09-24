@@ -1,5 +1,17 @@
 # PeriziaFlow AI
 
+![Prototype](https://img.shields.io/badge/status-Prototype%20V1-blue)
+[![Live Demo](https://img.shields.io/badge/demo-Live-success)](https://dfois-consulting.github.io/periziaflow-ai/)
+![Dfois Consulting](https://img.shields.io/badge/by-Dfois%20Consulting-0f172a)
+
+## Status
+
+- **Current stage:** Prototype validation
+- **Production ready:** No
+- **Pilot program:** Open
+
+👉 **[Open live demo](https://dfois-consulting.github.io/periziaflow-ai/)**
+
 **Gestionale intelligente per agenzie peritali, studi fiduciari e back office sinistri.**
 
 PeriziaFlow AI è un prototipo sviluppato da **Dfois Consulting** per semplificare la gestione operativa delle pratiche peritali, ridurre i passaggi manuali e riunire in un unico ambiente pratiche, periti, documenti, email, scadenze e compensi.
