@@ -1,0 +1,172 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="description" content="PeriziaFlow AI è un prototipo gestionale per agenzie peritali: pratiche, documenti, email, scadenze, periti e compensi in un unico flusso." />
+  <title>PeriziaFlow AI | Gestionale intelligente per agenzie peritali</title>
+  <link rel="stylesheet" href="site.css" />
+</head>
+<body>
+  <header class="site-header">
+    <div class="container nav-wrap">
+      <a class="brand" href="#top" aria-label="PeriziaFlow AI home">
+        <span class="brand-mark">PF</span>
+        <span><strong>PeriziaFlow AI</strong><small>Pratiche peritali, senza dispersioni</small></span>
+      </a>
+      <nav>
+        <a href="#funzioni">Funzioni</a>
+        <a href="#demo">Demo</a>
+        <a href="#pilota">Progetto pilota</a>
+        <a class="nav-cta" href="demo/index.html" target="_blank" rel="noopener">Apri demo</a>
+      </nav>
+    </div>
+  </header>
+
+  <main id="top">
+    <section class="hero">
+      <div class="container hero-grid">
+        <div class="hero-copy">
+          <span class="eyebrow">PROTOTIPO V1 · AGENZIE PERITALI</span>
+          <h1>Una sola regia per pratiche, periti, documenti, email e scadenze.</h1>
+          <p class="lead">PeriziaFlow AI nasce per semplificare il back office delle agenzie che gestiscono incarichi per conto delle compagnie assicurative. L'obiettivo è ridurre passaggi manuali, informazioni sparse e controlli ripetitivi.</p>
+          <div class="hero-actions">
+            <a class="btn primary" href="demo/index.html" target="_blank" rel="noopener">Prova la demo</a>
+            <a class="btn secondary" href="#pilota">Valuta un test pilota</a>
+          </div>
+          <div class="trust-line">
+            <span>✓ Demo senza installazione</span>
+            <span>✓ Dati dimostrativi</span>
+            <span>✓ Nessun accesso a sistemi reali</span>
+          </div>
+        </div>
+
+        <div class="hero-panel" aria-label="Anteprima dashboard PeriziaFlow AI">
+          <div class="browser-bar"><span></span><span></span><span></span><div>periziaflow.ai / dashboard</div></div>
+          <div class="mini-app">
+            <aside>
+              <b>PF</b>
+              <i></i><i></i><i></i><i></i><i></i>
+            </aside>
+            <section>
+              <div class="mini-title">Dashboard operativa</div>
+              <div class="mini-cards">
+                <div><small>Pratiche aperte</small><strong>486</strong></div>
+                <div><small>Da assegnare</small><strong>12</strong></div>
+                <div><small>Ferme &gt; 7 gg</small><strong>18</strong></div>
+              </div>
+              <div class="mini-table">
+                <div><b>PR-2026-0001</b><span>Documenti mancanti</span><em>12 gg</em></div>
+                <div><b>PR-2026-0003</b><span>Da verificare</span><em>4 gg</em></div>
+                <div><b>PR-2026-0007</b><span>Perizia da inviare</span><em>6 gg</em></div>
+              </div>
+            </section>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="problem section">
+      <div class="container split">
+        <div>
+          <span class="eyebrow">IL PROBLEMA</span>
+          <h2>Quando la pratica è divisa tra email, cartelle, Excel e gestionale, il tempo si perde nei passaggi.</h2>
+        </div>
+        <div class="problem-list">
+          <div><strong>Informazioni sparse</strong><p>Email, allegati e note non sempre sono immediatamente collegati alla pratica corretta.</p></div>
+          <div><strong>Controlli ripetitivi</strong><p>Scadenze, documenti mancanti, pratiche ferme e compensi richiedono verifiche continue.</p></div>
+          <div><strong>Poca visibilità</strong><p>Responsabili e back office faticano ad avere una fotografia unica dello stato delle lavorazioni.</p></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="funzioni" class="section features">
+      <div class="container">
+        <span class="eyebrow">V1</span>
+        <h2>Il flusso operativo, riunito in un solo ambiente.</h2>
+        <div class="feature-grid">
+          <article><div class="icon">01</div><h3>Pratiche</h3><p>Ricerca, filtri, stato, perito assegnato, giorni di apertura e dettaglio completo.</p></article>
+          <article><div class="icon">02</div><h3>Documenti</h3><p>Documentazione collegata direttamente alla pratica con apertura in una nuova scheda.</p></article>
+          <article><div class="icon">03</div><h3>Email</h3><p>Messaggi classificati e associati alla pratica, senza perdere il contesto operativo.</p></article>
+          <article><div class="icon">04</div><h3>Periti</h3><p>Zona, specializzazione, carico di lavoro, tempi medi e disponibilità.</p></article>
+          <article><div class="icon">05</div><h3>Scadenze</h3><p>Pratiche ferme, attività da completare e solleciti in evidenza.</p></article>
+          <article><div class="icon">06</div><h3>Compensi</h3><p>Compensi fiduciari, fatture, scadenze e stato dei pagamenti.</p></article>
+        </div>
+      </div>
+    </section>
+
+    <section class="section workflow">
+      <div class="container">
+        <span class="eyebrow">ESEMPIO DI FLUSSO</span>
+        <h2>Dall'incarico alla chiusura della pratica.</h2>
+        <div class="steps">
+          <div><span>1</span><strong>Arriva l'incarico</strong><p>I dati principali vengono raccolti nella pratica.</p></div>
+          <div><span>2</span><strong>Si assegna il perito</strong><p>Con visibilità su zona, specializzazione e carico.</p></div>
+          <div><span>3</span><strong>Si gestiscono documenti ed email</strong><p>Tutto resta collegato alla stessa pratica.</p></div>
+          <div><span>4</span><strong>Si controllano stato e scadenze</strong><p>Le attività critiche emergono dalla dashboard.</p></div>
+          <div><span>5</span><strong>Si chiude e si passa all'amministrazione</strong><p>Compensi e lavorazioni restano tracciati.</p></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="demo" class="section demo-section">
+      <div class="container">
+        <div class="section-headline">
+          <div><span class="eyebrow">DEMO INTERATTIVA</span><h2>Provala direttamente dal browser.</h2></div>
+          <a class="btn primary" href="demo/index.html" target="_blank" rel="noopener">Apri a schermo intero</a>
+        </div>
+        <div class="demo-frame-wrap">
+          <div class="browser-bar"><span></span><span></span><span></span><div>Demo PeriziaFlow AI</div></div>
+          <iframe src="demo/index.html" title="Demo PeriziaFlow AI" loading="lazy"></iframe>
+        </div>
+      </div>
+    </section>
+
+    <section id="pilota" class="section pilot">
+      <div class="container pilot-card">
+        <div>
+          <span class="eyebrow">CERCHIAMO UN'AGENZIA PILOTA</span>
+          <h2>La prossima versione deve nascere sui processi reali.</h2>
+          <p>Il prototipo usa solo dati dimostrativi. Il passo successivo è confrontarlo con il lavoro quotidiano di una piccola o media agenzia peritale, inizialmente anche con pratiche anonimizzate, per capire priorità, integrazioni e automazioni realmente utili.</p>
+          <ul>
+            <li>Analisi del flusso attuale</li>
+            <li>Test della demo con il back office</li>
+            <li>Raccolta feedback sulle funzioni prioritarie</li>
+            <li>Nessuna necessità iniziale di condividere dati sensibili reali</li>
+          </ul>
+        </div>
+        <div class="pilot-form">
+          <h3>Richiesta progetto pilota</h3>
+          <label>Nome agenzia<input id="agency" placeholder="Es. Studio Peritale Rossi"></label>
+          <label>Referente<input id="contact" placeholder="Nome e cognome"></label>
+          <label>Email<input id="email" type="email" placeholder="nome@azienda.it"></label>
+          <label>Messaggio<textarea id="message" rows="5">Vorrei valutare la demo PeriziaFlow AI e capire se può essere adatta al nostro processo di lavoro.</textarea></label>
+          <button class="btn primary full" id="copyRequest" type="button">Copia richiesta</button>
+          <small id="formNote">La demo non invia dati online: il pulsante prepara il testo da usare nella tua email o su LinkedIn.</small>
+        </div>
+      </div>
+    </section>
+
+    <section class="section roadmap">
+      <div class="container split">
+        <div><span class="eyebrow">ROADMAP</span><h2>Dal prototipo a una V1 operativa.</h2></div>
+        <div class="roadmap-items">
+          <div><b>01</b><span><strong>Database e utenti</strong><small>Dati persistenti, login e ruoli.</small></span></div>
+          <div><b>02</b><span><strong>Email reali</strong><small>Collegamento Outlook/IMAP e associazione alle pratiche.</small></span></div>
+          <div><b>03</b><span><strong>Archivio documentale</strong><small>File reali, permessi e tracciabilità.</small></span></div>
+          <div><b>04</b><span><strong>Automazioni</strong><small>Scadenze, solleciti e creazione guidata delle pratiche.</small></span></div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="container footer-inner">
+      <div class="brand"><span class="brand-mark">PF</span><span><strong>PeriziaFlow AI</strong><small>Prototipo dimostrativo</small></span></div>
+      <p>Concept indipendente in fase di validazione. Nessun collegamento con compagnie assicurative o software gestionali esistenti.</p>
+    </div>
+  </footer>
+
+  <script src="site.js"></script>
+</body>
+</html>
