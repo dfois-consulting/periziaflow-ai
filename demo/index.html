@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PeriziaFlow AI - V1</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="app">
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-mark">PF</div>
+        <div>
+          <h1>PeriziaFlow AI</h1>
+          <span>V1 Prototype</span>
+        </div>
+      </div>
+
+      <nav id="nav">
+        <button class="nav-item active" data-view="dashboard">Dashboard</button>
+        <button class="nav-item" data-view="pratiche">Pratiche</button>
+        <button class="nav-item" data-view="incarichi">Nuovi incarichi</button>
+        <button class="nav-item" data-view="email">Email</button>
+        <button class="nav-item" data-view="periti">Periti</button>
+        <button class="nav-item" data-view="documenti">Documenti</button>
+        <button class="nav-item" data-view="scadenze">Scadenze</button>
+        <button class="nav-item" data-view="compensi">Compensi</button>
+        <button class="nav-item" data-view="report">Report</button>
+      </nav>
+    </aside>
+
+    <main class="main">
+      <header class="topbar">
+        <div>
+          <h2 id="pageTitle">Dashboard</h2>
+          <p id="pageSubtitle">Panoramica operativa dell'agenzia</p>
+        </div>
+        <div class="top-actions">
+          <input id="globalSearch" type="search" placeholder="Cerca pratica, sinistro, assicurato..." />
+          <button class="primary" id="newCaseBtn">+ Nuova pratica</button>
+        </div>
+      </header>
+
+      <section id="dashboard" class="view active">
+        <div class="cards" id="kpiCards"></div>
+
+        <div class="grid two">
+          <div class="panel">
+            <div class="panel-head">
+              <h3>Da fare oggi</h3>
+            </div>
+            <div id="todoList"></div>
+          </div>
+
+          <div class="panel">
+            <div class="panel-head">
+              <h3>Pratiche critiche</h3>
+            </div>
+            <div id="criticalCases"></div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-head">
+            <h3>Ultime attività</h3>
+          </div>
+          <div id="activityFeed"></div>
+        </div>
+      </section>
+
+      <section id="pratiche" class="view">
+        <div class="panel">
+          <div class="toolbar">
+            <select id="filterCompany">
+              <option value="">Tutte le compagnie</option>
+            </select>
+            <select id="filterStatus">
+              <option value="">Tutti gli stati</option>
+            </select>
+            <select id="filterExpert">
+              <option value="">Tutti i periti</option>
+            </select>
+            <button id="resetFilters">Azzera filtri</button>
+          </div>
+
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Pratica</th>
+                  <th>Sinistro</th>
+                  <th>Compagnia</th>
+                  <th>Assicurato</th>
+                  <th>Tipo</th>
+                  <th>Perito</th>
+                  <th>Stato</th>
+                  <th>Giorni</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody id="casesTable"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <section id="incarichi" class="view">
+        <div class="panel">
+          <div class="panel-head">
+            <h3>Inbox incarichi</h3>
+            <span class="badge">AI extraction demo</span>
+          </div>
+          <div id="assignmentsList"></div>
+        </div>
+      </section>
+
+      <section id="email" class="view">
+        <div class="panel">
+          <div class="panel-head">
+            <h3>Email classificate</h3>
+          </div>
+          <div id="emailList"></div>
+        </div>
+      </section>
+
+      <section id="periti" class="view">
+        <div class="panel">
+          <div class="panel-head">
+            <h3>Anagrafica periti</h3>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Perito</th>
+                  <th>Zona</th>
+                  <th>Specializzazione</th>
+                  <th>Pratiche aperte</th>
+                  <th>Tempo medio</th>
+                  <th>Disponibilità</th>
+                </tr>
+              </thead>
+              <tbody id="expertsTable"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <section id="documenti" class="view">
+        <div class="panel">
+          <div class="panel-head">
+            <h3>Documenti recenti</h3>
+          </div>
+          <div id="documentsList"></div>
+        </div>
+      </section>
+
+      <section id="scadenze" class="view">
+        <div class="panel">
+          <div class="panel-head">
+            <h3>Scadenze e solleciti</h3>
+          </div>
+          <div id="deadlinesList"></div>
+        </div>
+      </section>
+
+      <section id="compensi" class="view">
+        <div class="cards" id="financeCards"></div>
+        <div class="panel">
+          <div class="panel-head">
+            <h3>Compensi fiduciari</h3>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Perito</th>
+                  <th>Pratiche</th>
+                  <th>Importo</th>
+                  <th>Fattura</th>
+                  <th>Scadenza</th>
+                  <th>Stato</th>
+                </tr>
+              </thead>
+              <tbody id="paymentsTable"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <section id="report" class="view">
+        <div class="cards" id="reportCards"></div>
+        <div class="grid two">
+          <div class="panel">
+            <div class="panel-head"><h3>Pratiche per compagnia</h3></div>
+            <div id="companyBars"></div>
+          </div>
+          <div class="panel">
+            <div class="panel-head"><h3>Pratiche per stato</h3></div>
+            <div id="statusBars"></div>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <dialog id="caseDialog">
+    <form method="dialog" class="modal">
+      <div class="panel-head">
+        <h3 id="caseModalTitle">Dettaglio pratica</h3>
+        <button class="icon-btn">✕</button>
+      </div>
+      <div id="caseModalBody"></div>
+    </form>
+  </dialog>
+
+  <dialog id="newCaseDialog">
+    <form method="dialog" class="modal" id="newCaseForm">
+      <div class="panel-head">
+        <h3>Nuova pratica</h3>
+        <button class="icon-btn">✕</button>
+      </div>
+      <div class="form-grid">
+        <label>Numero sinistro<input name="claim" required></label>
+        <label>Compagnia<input name="company" required></label>
+        <label>Assicurato<input name="insured" required></label>
+        <label>Tipologia<input name="type" required></label>
+        <label>Perito<input name="expert"></label>
+        <label>Stato
+          <select name="status">
+            <option>Da assegnare</option>
+            <option>Assegnata</option>
+            <option>Cliente da contattare</option>
+            <option>In attesa documentazione</option>
+          </select>
+        </label>
+      </div>
+      <div class="modal-actions">
+        <button value="cancel">Annulla</button>
+        <button value="default" class="primary" id="saveNewCase">Salva pratica</button>
+      </div>
+    </form>
+  </dialog>
+
+  <script src="app.js"></script>
+</body>
+</html>
