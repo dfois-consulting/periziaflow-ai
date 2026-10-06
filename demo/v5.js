@@ -76,6 +76,12 @@ window.openCase=function(id){oldOpenCase(id);const c=cases.find(x=>x.id===id);if
  document.querySelector('#caseModalBody').insertBefore(panel,document.querySelector('.case-tabs'));
  const upload=document.querySelector('.upload-row');upload.insertAdjacentHTML('afterbegin',`<label>Sottocartella<select id="folder-${id}">${options(folders,folders[1])}</select></label>`);
  document.querySelector(`#upload-${id}`).multiple=true;
+ const linked=documents.filter(d=>d.caseId===id);
+ document.querySelectorAll('#caseModalBody .doc-item').forEach((row,i)=>{
+  if(i>=linked.length)return;
+  const button=document.createElement('button');button.type='button';button.className='danger-btn';button.textContent='Elimina';
+  button.onclick=()=>deleteDocument(linked[i].id,true);row.append(button);
+ });
 };
 window.changeStatus=id=>editCase(id);
 const oldCreate=window.createFromAssignment;
@@ -95,7 +101,7 @@ window.renderDocuments=function(){
  target.innerHTML=`<div class="back-strip"><button onclick="openFolder('')">← Tutti i fascicoli</button><button onclick="backToCase('${c.id}')">Apri pratica</button></div><h3>Sinistro ${esc(c.claim)} · ${esc(c.company)} · ${esc(c.insured)}</h3><p class="meta">${esc(c.id)} · ${ds.length} documenti</p>
  <div class="folder-grid">${folders.map(f=>`<button class="folder-card ${selectedFolder===f?'selected':''}" onclick="openFolder('${c.id}','${f}')"><strong>📁 ${esc(f)}</strong><small>${ds.filter(d=>d.folder===f).length} documenti</small></button>`).join('')}</div>
  <div class="upload-row"><label>Sottocartella<select id="archiveFolder">${options(folders,selectedFolder||folders[1])}</select></label><input id="archiveUpload" type="file" multiple><button class="primary" id="archiveUploadBtn">Carica file</button></div>
- <h4>${esc(selectedFolder||'Tutti i documenti del fascicolo')}</h4>${ds.filter(d=>!selectedFolder||d.folder===selectedFolder).map(d=>`<div class="list-row"><div><strong>${esc(d.name)}</strong><div class="meta">${esc(d.folder)} · ${showDate(d.date)} · ${d.blobKey?'File locale':'Esempio dimostrativo'}</div></div><button class="secondary" onclick="openDocument('${c.id}',${ds.indexOf(d)})">Apri</button></div>`).join('')||'<p class="empty-state">Nessun documento in questa sottocartella.</p>'}`;
+ <h4>${esc(selectedFolder||'Tutti i documenti del fascicolo')}</h4>${ds.filter(d=>!selectedFolder||d.folder===selectedFolder).map(d=>`<div class="list-row"><div><strong>${esc(d.name)}</strong><div class="meta">${esc(d.folder)} · ${showDate(d.date)} · ${d.blobKey?'File locale':'Esempio dimostrativo'}</div></div><div class="row-actions"><button class="secondary" onclick="openDocument('${c.id}',${ds.indexOf(d)})">Apri</button><button class="danger-btn" onclick="deleteDocument('${d.id}',false)">Elimina</button></div></div>`).join('')||'<p class="empty-state">Nessun documento in questa sottocartella.</p>'}`;
  document.querySelector('#archiveUploadBtn').onclick=()=>storeUpload(c.id,document.querySelector('#archiveUpload'),document.querySelector('#archiveFolder').value,false);
 };
 window.goToDocuments=function(id){document.querySelector('#caseDialog').close();document.querySelector('[data-view="documenti"]').click();document.querySelector('#docSearch').value='';openFolder(id);};
@@ -136,3 +142,25 @@ window.renderReports=function(){baseReports();const rows=getReportRows();const a
 reportPanel.querySelectorAll('input,select').forEach(el=>el.onchange=renderReports);
 document.querySelector('#exportLiquidations').onclick=()=>{const rows=[['Categoria','Danno','Sinistri','Media liquidata','Mediana','Richiesta media','N richieste','Periziato medio','N periziati','Giorni medi','N tempi'],...reportGroups.map(g=>[...g.key,g.n,g.avg,g.median,g.requested,g.rn,g.assessed,g.an,g.days,g.dn])];const cell=v=>'"'+String(v??'').replace(/^[=+@-]/,"'$&").replace(/"/g,'""')+'"';const blob=new Blob(['\ufeff'+rows.map(r=>r.map(cell).join(';')).join('\r\n')],{type:'text/csv;charset=utf-8'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='PeriziaFlow_Medie_Liquidazione.csv';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000);};
 refreshReportFilters();renderAll();
+
+// Delete only the selected document. Keep unrelated files and the case intact.
+const deletingDocuments=new Set();
+async function deleteFileBlob(key){const db=await dbPromise;return new Promise((resolve,reject)=>{const tx=db.transaction('files','readwrite');tx.objectStore('files').delete(key);tx.oncomplete=()=>resolve();tx.onerror=()=>reject(tx.error);tx.onabort=()=>reject(tx.error);});}
+window.deleteDocument=async function(documentId,fromCase=false){
+ const d=documents.find(x=>x.id===documentId);
+ if(!d||deletingDocuments.has(documentId))return;
+ if(!confirm(`Eliminare il documento "${d.name}" dalla pratica ${d.caseId}?
+
+Il file caricato verrà rimosso da questo browser. Questa operazione non elimina la pratica né gli altri documenti.`))return;
+ deletingDocuments.add(documentId);
+ let backup;
+ try{
+  if(d.blobKey){backup=await blobStore('readonly',d.blobKey);await deleteFileBlob(d.blobKey);}
+  const next=documents.filter(x=>x.id!==documentId);
+  try{localStorage.setItem('pf_documents_v5',JSON.stringify(next));}
+  catch(e){if(d.blobKey&&backup)await blobStore('readwrite',d.blobKey,backup);throw e;}
+  documents.splice(0,documents.length,...next);
+  renderDocuments();if(fromCase&&document.querySelector('#caseDialog').open)openCase(d.caseId);
+ }catch(e){alert('Documento non eliminato: '+e.message);}
+ finally{deletingDocuments.delete(documentId);}
+};
