@@ -284,3 +284,5 @@ dialog::backdrop { background: rgba(15, 23, 42, .55); }
 .danger-btn{background:#fff1f2;color:#b42335;border:1px solid #fecdd3;border-radius:8px;padding:8px 12px;cursor:pointer;font-weight:600}.danger-btn:hover{background:#ffe4e6}.doc-item .danger-btn{margin-left:8px}
 
 #importDialog{width:min(1200px,96vw);max-height:92vh;overflow:auto}#importDialog .modal{max-width:none}#sheetLabel{display:block;margin:16px 0}#sheetLabel[hidden]{display:none}#importMessage{padding:12px;background:#eff6ff;border-radius:8px}#columnMapping{margin:18px 0}#importPreview{margin:20px 0}#importDialog .form-grid{grid-template-columns:repeat(auto-fit,minmax(220px,1fr))}
+
+.backup-actions{display:flex;gap:24px;align-items:center;flex-wrap:wrap;margin:22px 0}.backup-label{display:flex;flex-direction:column;gap:8px}#backupMessage{padding:14px;background:#eff6ff;border-radius:10px}#backupPreview{margin:18px 0}
