@@ -1,3 +1,4 @@
+function esc(v){return String(v ?? "").replace(/[&<>"']/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c]));}
 
 const seedCases = [
   {id:"PR-2026-0001", claim:"45687322", company:"Generali", insured:"Mario Rossi", type:"Danni da acqua", expert:"Luca Bianchi", status:"In attesa documentazione", days:12, amount:3850, created:"12/09/2026"},
@@ -103,7 +104,7 @@ function renderKPIs(){
     .slice(0,5)
     .map(c=>`
       <div class="list-row">
-        <div><strong>${c.id}</strong> · ${c.insured}<div class="meta">${c.company} · ${c.status}</div></div>
+        <div><strong>${esc(c.id)}</strong> · ${esc(c.insured)}<div class="meta">${esc(c.company)} · ${esc(c.status)}</div></div>
         <span class="status ${c.days>7?'red':'orange'}">${c.days} gg</span>
       </div>
     `).join("");
@@ -136,20 +137,20 @@ function renderCases(){
   const fs = document.querySelector("#filterStatus").value;
   const fe = document.querySelector("#filterExpert").value;
   const rows = cases.filter(c=>{
-    const blob = [c.id,c.claim,c.company,c.insured,c.type,c.expert,c.status].join(" ").toLowerCase();
+    const blob = [c.id,c.claim,c.company,c.insured,c.type,c.category,c.expert,c.status].join(" ").toLowerCase();
     return (!q || blob.includes(q)) && (!fc || c.company===fc) && (!fs || c.status===fs) && (!fe || c.expert===fe);
   });
   document.querySelector("#casesTable").innerHTML = rows.map(c=>`
     <tr>
-      <td><strong>${c.id}</strong></td>
-      <td>${c.claim}</td>
-      <td>${c.company}</td>
-      <td>${c.insured}</td>
-      <td>${c.type}</td>
+      <td><strong>${esc(c.id)}</strong></td>
+      <td>${esc(c.claim)}</td>
+      <td>${esc(c.company)}</td>
+      <td>${esc(c.insured)}</td>
+      <td>${esc(c.category || "Da classificare")}<div class="meta">${esc(c.type)}</div></td>
       <td>${c.expert || "—"}</td>
-      <td><span class="status ${statusClass(c.status)}">${c.status}</span></td>
+      <td><span class="status ${statusClass(c.status)}">${esc(c.status)}</span></td>
       <td>${c.days}</td>
-      <td><button class="link-btn" onclick="openCase('${c.id}')">Apri</button></td>
+      <td><button class="link-btn" onclick="openCase('${esc(c.id)}')">Apri</button></td>
     </tr>
   `).join("") || `<tr><td colspan="9">Nessun risultato.</td></tr>`;
 }
@@ -202,8 +203,8 @@ function renderExperts(){
 function renderDocuments(){
   document.querySelector("#documentsList").innerHTML = documents.map(d=>`
     <div class="list-row">
-      <div><strong>${d.name}</strong><div class="meta">${d.caseId} · ${d.date}</div></div>
-      <span class="status gray">${d.type}</span>
+      <div><strong>${esc(d.name)}</strong><div class="meta">${d.caseId} · ${esc(d.date)}</div></div>
+      <span class="status gray">${esc(d.type)}</span>
     </div>
   `).join("");
 }
@@ -279,8 +280,8 @@ window.openCase = function(id){
   const docsHtml = linkedDocs.length ? linkedDocs.map((d,idx)=>`
     <div class="doc-item">
       <div>
-        <strong>${d.name}</strong>
-        <div class="meta">${d.type} · ${d.date}</div>
+        <strong>${esc(d.name)}</strong>
+        <div class="meta">${esc(d.type)} · ${esc(d.date)}</div>
       </div>
       <button class="link-btn" type="button" onclick="openDocument('${id}', ${idx})">Apri</button>
     </div>
@@ -298,12 +299,12 @@ window.openCase = function(id){
 
   const notesHtml = c.notes.length ? c.notes.slice().reverse().map(n=>`
     <div class="note-item">
-      <div>${n.text}</div>
-      <div class="meta">${n.date}</div>
+      <div>${esc(n.text)}</div>
+      <div class="meta">${esc(n.date)}</div>
     </div>
   `).join("") : `<div class="empty-state">Nessuna nota interna.</div>`;
 
-  document.querySelector("#caseModalTitle").textContent = `${c.id} · ${c.insured}`;
+  document.querySelector("#caseModalTitle").textContent = `${esc(c.id)} · ${esc(c.insured)}`;
   document.querySelector("#caseModalBody").innerHTML = `
     <div class="quick-actions">
       <button class="action-btn" type="button" onclick="editCase('${id}')">✏️ Modifica pratica</button>
@@ -315,13 +316,13 @@ window.openCase = function(id){
     </div>
 
     <div class="detail-grid">
-      <div class="detail-box"><span>Numero sinistro</span><strong>${c.claim}</strong></div>
-      <div class="detail-box"><span>Compagnia</span><strong>${c.company}</strong></div>
-      <div class="detail-box"><span>Assicurato</span><strong>${c.insured}</strong></div>
-      <div class="detail-box"><span>Tipologia</span><strong>${c.type}</strong></div>
+      <div class="detail-box"><span>Numero sinistro</span><strong>${esc(c.claim)}</strong></div>
+      <div class="detail-box"><span>Compagnia</span><strong>${esc(c.company)}</strong></div>
+      <div class="detail-box"><span>Assicurato</span><strong>${esc(c.insured)}</strong></div>
+      <div class="detail-box"><span>Tipologia</span><strong>${esc(c.type)}</strong></div>
       <div class="detail-box"><span>Perito</span><strong>${c.expert || "Non assegnato"}</strong></div>
-      <div class="detail-box"><span>Stato</span><strong>${c.status}</strong></div>
-      <div class="detail-box"><span>Data incarico</span><strong>${c.created}</strong></div>
+      <div class="detail-box"><span>Stato</span><strong>${esc(c.status)}</strong></div>
+      <div class="detail-box"><span>Data incarico</span><strong>${esc(c.created)}</strong></div>
       <div class="detail-box"><span>Giorni aperta</span><strong>${c.days}</strong></div>
       <div class="detail-box"><span>Importo stimato</span><strong>${euro(c.amount || 0)}</strong></div>
     </div>
@@ -365,7 +366,7 @@ window.openCase = function(id){
       </div>
     </div>
   `;
-  document.querySelector("#caseDialog").showModal();
+  if(!document.querySelector("#caseDialog").open) document.querySelector("#caseDialog").showModal();
 };
 
 window.editCase = function(id){
@@ -423,7 +424,7 @@ window.openDocument = function(caseId, idx){
     <html lang="it">
     <head>
       <meta charset="UTF-8">
-      <title>${d.name}</title>
+      <title>${esc(d.name)}</title>
       <style>
         body{font-family:Arial,sans-serif;background:#f4f7fb;color:#172033;margin:0;padding:40px}
         .box{max-width:800px;margin:auto;background:white;border:1px solid #e5e7eb;border-radius:14px;padding:28px;box-shadow:0 8px 30px rgba(15,23,42,.08)}
@@ -434,10 +435,10 @@ window.openDocument = function(caseId, idx){
     </head>
     <body>
       <div class="box">
-        <h1>${d.name}</h1>
+        <h1>${esc(d.name)}</h1>
         <div class="meta"><strong>Pratica:</strong> ${caseId}</div>
-        <div class="meta"><strong>Tipo:</strong> ${d.type}</div>
-        <div class="meta"><strong>Data:</strong> ${d.date}</div>
+        <div class="meta"><strong>Tipo:</strong> ${esc(d.type)}</div>
+        <div class="meta"><strong>Data:</strong> ${esc(d.date)}</div>
         <div class="notice">
           Demo V1: nella versione operativa qui verrà aperto il documento reale.
           Questa pagina è stata aperta in una nuova scheda per non perdere la pratica.
@@ -521,9 +522,9 @@ window.goToDocuments = function(caseId){
     </div>
     ${rows.length ? rows.map((d,idx)=>`
       <div class="list-row">
-        <div><strong>${d.name}</strong><div class="meta">${d.caseId} · ${d.date}</div></div>
+        <div><strong>${esc(d.name)}</strong><div class="meta">${d.caseId} · ${esc(d.date)}</div></div>
         <div class="row-actions">
-          <span class="status gray">${d.type}</span>
+          <span class="status gray">${esc(d.type)}</span>
           <button class="link-btn" type="button" onclick="openDocument('${caseId}', ${idx})">Apri</button>
         </div>
       </div>
