@@ -34,7 +34,7 @@ deadlineDashboard.innerHTML='<div class="panel-head"><h3>Avvisi scadenze</h3><bu
 document.querySelector('#kpiCards').after(deadlineDashboard);
 function deadlineCardsHTML(rows){return [['Scadute','overdue'],['Oggi','today'],['Nei prossimi 7 giorni','soon'],['Completate','done']].map(([label,key])=>`<div class="card"><div class="label">${label}</div><div class="value">${rows.filter(r=>deadlineState(r.d).key===key).length}</div></div>`).join('');}
 function deadlineRowsHTML(rows,actions=true){
- return rows.map(({c,d})=>{const state=deadlineState(d);return `<div class="list-row deadline-row"><div><strong>${esc(d.type)} · ${showDate(d.dueDate)}</strong><div class="meta">Sinistro ${esc(c.claim)} · ${esc(c.company)} · ${esc(c.insured)} · ${esc(c.expert||'Perito non assegnato')}</div>${d.text?`<div class="deadline-description">${esc(d.text)}</div>`:''}${d.completedAt?`<div class="meta">Completata il ${showDate(d.completedAt)}</div>`:''}</div><div class="row-actions"><span class="status ${state.color}">${state.label}</span><button type="button" data-dl-action="case" data-case-id="${esc(c.id)}">Apri pratica</button>${actions?`<button type="button" data-dl-action="edit" data-case-id="${esc(c.id)}" data-deadline-id="${esc(d.id)}">Modifica</button><button type="button" data-dl-action="toggle" data-case-id="${esc(c.id)}" data-deadline-id="${esc(d.id)}">${d.status==='Completata'?'Riapri':'Completata'}</button><button type="button" class="danger-btn" data-dl-action="delete" data-case-id="${esc(c.id)}" data-deadline-id="${esc(d.id)}">Elimina</button>`:''}</div></div>`;}).join('')||'<p class="empty-state">Nessuna scadenza da mostrare.</p>';
+ return rows.map(({c,d})=>{const state=deadlineState(d);return `<div class="list-row deadline-row"><div><strong>${esc(d.type)} · ${showDate(d.dueDate)}</strong><div class="meta">Sinistro ${esc(c.claim)} · ${esc(c.company)} · ${esc(c.insured)} · ${esc(c.expert||'Perito non assegnato')}</div>${d.text?`<div class="deadline-description">${esc(d.text)}</div>`:''}${d.completedAt?`<div class="meta">Completata il ${showDate(d.completedAt)}</div>`:''}</div><div class="row-actions"><span class="status ${state.color}">${state.label}</span><button type="button" data-dl-action="case" data-case-id="${esc(c.id)}">Apri pratica</button>${actions?`<button type="button" data-dl-action="remind" data-case-id="${esc(c.id)}" data-deadline-id="${esc(d.id)}">Prepara sollecito</button><button type="button" data-dl-action="edit" data-case-id="${esc(c.id)}" data-deadline-id="${esc(d.id)}">Modifica</button><button type="button" data-dl-action="toggle" data-case-id="${esc(c.id)}" data-deadline-id="${esc(d.id)}">${d.status==='Completata'?'Riapri':'Completata'}</button><button type="button" class="danger-btn" data-dl-action="delete" data-case-id="${esc(c.id)}" data-deadline-id="${esc(d.id)}">Elimina</button>`:''}</div></div>`;}).join('')||'<p class="empty-state">Nessuna scadenza da mostrare.</p>';
 }
 window.renderDeadlines=function(){
  const rows=allDeadlineRows(),selector=document.querySelector('#deadlineCompany'),company=selector.value;
@@ -43,7 +43,7 @@ window.renderDeadlines=function(){
  const filtered=rows.filter(({c,d})=>{const state=deadlineState(d).key;return (filter==='all'||(filter==='open'&&state!=='done')||(filter==='soon'&&['today','soon'].includes(state))||state===filter)&&(!type||d.type===type)&&(!selector.value||c.company===selector.value)&&[c.claim,c.company,c.insured,c.expert,d.type,d.text].join(' ').toLowerCase().includes(q);});
  document.querySelector('#deadlineCards').innerHTML=deadlineCardsHTML(rows);
  document.querySelector('#deadlinesList').innerHTML=`<p class="meta">${filtered.length} attività · Riepilogo su tutte le pratiche</p>`+deadlineRowsHTML(filtered);
- renderDeadlineDashboard(rows);
+ renderDeadlineDashboard(rows);if(typeof renderReminders==='function')renderReminders();
 };
 function renderDeadlineDashboard(rows=allDeadlineRows()){
  const urgent=rows.filter(({d})=>['overdue','today','soon'].includes(deadlineState(d).key));
@@ -73,6 +73,7 @@ function handleDeadlineAction(ev){
  const c=cases.find(c=>c.id===button.dataset.caseId);if(!c)return;
  if(button.dataset.dlAction==='case'){openCase(c.id);return;}
  const d=c.deadlines?.find(d=>d.id===button.dataset.deadlineId);if(!d)return;
+ if(button.dataset.dlAction==='remind'){openReminder(c.id,d.id);return;}
  if(button.dataset.dlAction==='edit'){editDeadline(c.id,d.id);return;}
  if(button.dataset.dlAction==='delete'){
   if(!confirm(`Eliminare la scadenza ${d.type} del ${showDate(d.dueDate)} per il sinistro ${c.claim}?`))return;
