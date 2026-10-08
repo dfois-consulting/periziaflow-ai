@@ -1,4 +1,4 @@
-/* PeriziaFlow V1.9 — bozze locali e storico invii dichiarati dall'operatore. */
+/* PeriziaFlow V1.9.1 — bozze locali e storico invii dichiarati dall'operatore. */
 const reminderTypes=['Documentazione','Sopralluogo','Consegna perizia','Aggiornamento pratica'];
 function validReminderEmail(value){return value===''||/^[^\s@<>;,]+@[^\s@<>;,]+\.[^\s@<>;,]+$/.test(value);}
 function validReminderTimestamp(value){return typeof value==='string'&&/^\d{4}-\d{2}-\d{2}T/.test(value)&&!isNaN(Date.parse(value))&&new Date(value).toISOString()===value;}
@@ -11,6 +11,13 @@ function cleanReminder(raw){
  if(!validReminderTimestamp(raw.createdAt)||!validReminderTimestamp(raw.updatedAt)||raw.updatedAt<raw.createdAt)throw Error('Date sollecito non valide.');
  if(typeof raw.sentAt!=='string'||(raw.status==='Bozza'&&raw.sentAt!=='')||(raw.status==='Inviato manualmente'&&(!validReminderTimestamp(raw.sentAt)||raw.sentAt<raw.createdAt||!out.recipientEmail)))throw Error('Dati invio manuale non validi.');
  return {...out,type:raw.type,status:raw.status,createdAt:raw.createdAt,updatedAt:raw.updatedAt,sentAt:raw.sentAt};
+}
+function reminderMailto(r){
+ if(!r.recipientEmail||!validReminderEmail(r.recipientEmail))throw Error('Indica e verifica l’email del destinatario prima di aprire la posta.');
+ if(/[\r\n]/.test(r.subject))throw Error('Oggetto non valido.');
+ const url=`mailto:${encodeURIComponent(r.recipientEmail)}?subject=${encodeURIComponent(r.subject)}&body=${encodeURIComponent(r.body.replace(/\r?\n/g,'\r\n'))}`;
+ if(url.length>1800)throw Error('Testo troppo lungo per l’apertura nella posta: usa Copia email e incollalo in un nuovo messaggio. La bozza è conservata.');
+ return url;
 }
 function reminderFromDeadline(d){return d?.type==='Documenti da ricevere'?'Documentazione':d?.type==='Sopralluogo'?'Sopralluogo':d?.type==='Consegna perizia'?'Consegna perizia':'Aggiornamento pratica';}
 function reminderTemplate(c,type,d){
@@ -40,7 +47,7 @@ window.openReminder=function(caseId='',deadlineId='',reminderId='',suggestedType
  if(reminderId&&!existing)return;
  let currentCase=initial,currentDeadline=initial.deadlines?.find(d=>d.id===deadlineId),activeId=existing?.id||'',isSent=existing?.status==='Inviato manualmente';
  const type=existing?.type||(reminderTypes.includes(suggestedType)?suggestedType:reminderFromDeadline(currentDeadline)),template=existing||reminderTemplate(initial,type,currentDeadline);
- reminderDialog.innerHTML=`<form class="modal" id="reminderForm"><div class="panel-head"><h3>${isSent?'Sollecito registrato':'Bozza di sollecito'}</h3><button type="button" class="icon-btn" id="closeReminder" aria-label="Chiudi">✕</button></div><p class="meta">Controlla destinatario e contenuto. Nessuna email viene inviata dal programma.</p><div class="form-grid"><label>Pratica / sinistro<select name="caseId" id="reminderCase" ${existing||deadlineId?'disabled':''}>${cases.map(c=>`<option value="${esc(c.id)}" ${c.id===initial.id?'selected':''}>${esc(c.claim)} · ${esc(c.company)} · ${esc(c.insured)}</option>`).join('')}</select></label><label>Tipo sollecito<select name="type" id="reminderType" ${isSent?'disabled':''}>${options(reminderTypes,type)}</select></label>${field('recipientName','Nome / ufficio destinatario',existing?.recipientName||'')}${field('recipientEmail','Email destinatario (da verificare)',existing?.recipientEmail||'','email')}</div><label class="reminder-field">Oggetto<input name="subject" maxlength="500" required value="${esc(template.subject)}"></label><label class="reminder-field">Testo email<textarea name="body" rows="12" maxlength="20000" required>${esc(template.body)}</textarea></label><p id="reminderMessage" role="status" aria-live="polite"></p><div class="modal-actions"><button type="button" id="cancelReminder">Chiudi</button>${isSent?'':'<button type="button" id="regenerateReminder">Rigenera testo</button><button type="submit" class="primary">Salva bozza</button>'}<button type="button" id="copyReminder">Copia email</button>${isSent?'':'<button type="button" id="markReminderSent">Registra invio manuale</button>'}</div></form>`;
+ reminderDialog.innerHTML=`<form class="modal" id="reminderForm"><div class="panel-head"><h3>${isSent?'Sollecito registrato':'Bozza di sollecito'}</h3><button type="button" class="icon-btn" id="closeReminder" aria-label="Chiudi">✕</button></div><p class="meta">Controlla destinatario e contenuto. Nessuna email viene inviata dal programma.</p><div class="form-grid"><label>Pratica / sinistro<select name="caseId" id="reminderCase" ${existing||deadlineId?'disabled':''}>${cases.map(c=>`<option value="${esc(c.id)}" ${c.id===initial.id?'selected':''}>${esc(c.claim)} · ${esc(c.company)} · ${esc(c.insured)}</option>`).join('')}</select></label><label>Tipo sollecito<select name="type" id="reminderType" ${isSent?'disabled':''}>${options(reminderTypes,type)}</select></label>${field('recipientName','Nome / ufficio destinatario',existing?.recipientName||'')}${field('recipientEmail','Email destinatario (da verificare)',existing?.recipientEmail||'','email')}</div><label class="reminder-field">Oggetto<input name="subject" maxlength="500" required value="${esc(template.subject)}"></label><label class="reminder-field">Testo email<textarea name="body" rows="12" maxlength="20000" required>${esc(template.body)}</textarea></label><p id="reminderMessage" role="status" aria-live="polite"></p><div class="modal-actions"><button type="button" id="cancelReminder">Chiudi</button>${isSent?'':'<button type="button" id="regenerateReminder">Rigenera testo</button><button type="submit" class="primary">Salva bozza</button>'}<button type="button" id="copyReminder">Copia email</button>${isSent?'':'<button type="button" id="openReminderMail">Apri nella posta</button>'}${isSent?'':'<button type="button" id="markReminderSent">Registra invio manuale</button>'}</div></form>`;
  reminderDialog.showModal();const form=document.querySelector('#reminderForm');
  const message=text=>document.querySelector('#reminderMessage').textContent=text;
  if(isSent)form.querySelectorAll('input,textarea').forEach(e=>e.readOnly=true);
@@ -62,6 +69,10 @@ window.openReminder=function(caseId='',deadlineId='',reminderId='',suggestedType
  else form.onsubmit=ev=>ev.preventDefault();
  document.querySelector('#copyReminder').onclick=async()=>{const r=storeDraft();if(!r)return;const text=`${r.recipientEmail?'A: '+r.recipientEmail+'\n':''}Oggetto: ${r.subject}\n\n${r.body}`;
   try{if(!navigator.clipboard?.writeText)throw Error('Clipboard non disponibile');await navigator.clipboard.writeText(text);message('Email copiata. Incollala nella tua posta e controllala prima dell’invio.');}catch{form.elements.body.focus();form.elements.body.select();message('Copia automatica non disponibile: testo selezionato, premi Ctrl+C. Copia anche oggetto e destinatario nei campi della tua email.');}
+ };
+ if(!isSent)document.querySelector('#openReminderMail').onclick=()=>{
+  const r=storeDraft();if(!r)return;
+  try{const url=reminderMailto(r);window.location.href=url;message('Richiesta apertura della posta inviata al dispositivo. Controlla e invia da lì. Il sollecito resta una bozza. Se non si apre, configura l’app di posta predefinita oppure usa Copia email.');}catch(e){message(e.message);}
  };
  if(!isSent)document.querySelector('#markReminderSent').onclick=()=>{
   if(!form.reportValidity())return;let values;try{values=readDraft();}catch(e){message(e.message);return;}

@@ -14,7 +14,7 @@ async function snapshotFiles(keys){if(!keys.length)return new Map();const db=awa
 async function buildFullBackup(){
  const practiceSnapshot=JSON.parse(JSON.stringify(cases)),docSnapshot=JSON.parse(JSON.stringify(documents));const keys=[...new Set(docSnapshot.map(d=>d.blobKey).filter(Boolean))];const stored=await snapshotFiles(keys);const files=[];let total=0;
  for(const key of keys){const blob=stored.get(key);if(!blob)throw Error('Un allegato non è disponibile: '+docSnapshot.find(d=>d.blobKey===key).name+'. Il backup non è stato esportato.');total+=blob.size;if(total>backupLimit)throw Error('Gli allegati superano il limite di 100 MB per backup.');const bytes=new Uint8Array(await blob.arrayBuffer());files.push({key,mime:blob.type||'application/octet-stream',size:bytes.length,sha256:await fileDigest(bytes),base64:toBase64(bytes)});}
- return {format:'PeriziaFlowBackup',version:3,appVersion:'1.9',createdAt:new Date().toISOString(),cases:practiceSnapshot,documents:docSnapshot,files};
+ return {format:'PeriziaFlowBackup',version:3,appVersion:'1.9.1',createdAt:new Date().toISOString(),cases:practiceSnapshot,documents:docSnapshot,files};
 }
 function backupText(value,label,max=10000){if(typeof value!=='string'||value.length>max)throw Error(label+': testo non valido.');return value;}
 function backupId(value,label){backupText(value,label,100);if(!/^[A-Za-z0-9_-]+$/.test(value))throw Error(label+': identificativo non valido.');return value;}
