@@ -75,6 +75,7 @@ window.openCase=function(id){oldOpenCase(id);const c=cases.find(x=>x.id===id);if
  const linked=documents.filter(d=>d.caseId===id);
  document.querySelectorAll('#caseModalBody .doc-item').forEach((row,i)=>{
   if(i>=linked.length)return;
+  if(linked[i].blobKey){const download=document.createElement('button');download.type='button';download.className='secondary';download.textContent='Scarica';download.onclick=()=>downloadDocument(id,i);row.append(download);}
   const button=document.createElement('button');button.type='button';button.className='danger-btn';button.textContent='Elimina';
   button.onclick=()=>deleteDocument(linked[i].id,true);row.append(button);
  });
@@ -97,7 +98,7 @@ window.renderDocuments=function(){
  target.innerHTML=`<div class="back-strip"><button onclick="openFolder('')">← Tutti i fascicoli</button><button onclick="backToCase('${c.id}')">Apri pratica</button></div><h3>Sinistro ${esc(c.claim)} · ${esc(c.company)} · ${esc(c.insured)}</h3><p class="meta">${esc(c.id)} · ${ds.length} documenti</p>
  <div class="folder-grid">${folders.map(f=>`<button class="folder-card ${selectedFolder===f?'selected':''}" onclick="openFolder('${c.id}','${f}')"><strong>📁 ${esc(f)}</strong><small>${ds.filter(d=>d.folder===f).length} documenti</small></button>`).join('')}</div>
  <div class="upload-row"><label>Sottocartella<select id="archiveFolder">${options(folders,selectedFolder||folders[1])}</select></label><input id="archiveUpload" type="file" multiple><button class="primary" id="archiveUploadBtn">Carica file</button></div>
- <h4>${esc(selectedFolder||'Tutti i documenti del fascicolo')}</h4>${ds.filter(d=>!selectedFolder||d.folder===selectedFolder).map(d=>`<div class="list-row"><div><strong>${esc(d.name)}</strong><div class="meta">${esc(d.folder)} · ${showDate(d.date)} · ${d.blobKey?'File locale':'Esempio dimostrativo'}</div></div><div class="row-actions"><button class="secondary" onclick="openDocument('${c.id}',${ds.indexOf(d)})">Apri</button><button class="danger-btn" onclick="deleteDocument('${d.id}',false)">Elimina</button></div></div>`).join('')||'<p class="empty-state">Nessun documento in questa sottocartella.</p>'}`;
+ <h4>${esc(selectedFolder||'Tutti i documenti del fascicolo')}</h4>${ds.filter(d=>!selectedFolder||d.folder===selectedFolder).map(d=>`<div class="list-row"><div><strong>${esc(d.name)}</strong><div class="meta">${esc(d.folder)} · ${showDate(d.date)} · ${d.blobKey?'File locale':'Esempio dimostrativo'}</div></div><div class="row-actions"><button class="secondary" onclick="openDocument('${c.id}',${ds.indexOf(d)})">Apri</button>${d.blobKey?`<button class="secondary" onclick="downloadDocument('${c.id}',${ds.indexOf(d)})">Scarica</button>`:''}<button class="danger-btn" onclick="deleteDocument('${d.id}',false)">Elimina</button></div></div>`).join('')||'<p class="empty-state">Nessun documento in questa sottocartella.</p>'}`;
  document.querySelector('#archiveUploadBtn').onclick=()=>storeUpload(c.id,document.querySelector('#archiveUpload'),document.querySelector('#archiveFolder').value,false);
 };
 window.goToDocuments=function(id){document.querySelector('#caseDialog').close();document.querySelector('[data-view="documenti"]').click();document.querySelector('#docSearch').value='';openFolder(id);};
@@ -109,9 +110,41 @@ async function storeUpload(id,input,folder,fromCase){
  }catch(e){alert('Caricamento non completato: '+e.message+'. Verifica lo spazio disponibile e i permessi del browser.');}finally{button.disabled=false;}
 }
 window.uploadDocument=id=>storeUpload(id,document.querySelector(`#upload-${id}`),document.querySelector(`#folder-${id}`).value,true);
+// Real-file preview: reserve the tab before awaiting IndexedDB to keep the user gesture.
 const demoOpen=window.openDocument;
-window.openDocument=async function(id,idx){const d=documents.filter(x=>x.caseId===id)[idx];if(!d)return;if(!d.blobKey){demoOpen(id,idx);return;}
- try{const file=await blobStore('readonly',d.blobKey);if(!file)throw Error('File non disponibile in questo browser.');const url=URL.createObjectURL(file);const a=document.createElement('a');a.href=url;a.download=d.name;a.click();setTimeout(()=>URL.revokeObjectURL(url),30000);}catch(e){alert(e.message);}
+function previewMime(file,name){
+ const extension=String(name||'').split('.').pop().toLowerCase();
+ const byExtension={pdf:'application/pdf',png:'image/png',jpg:'image/jpeg',jpeg:'image/jpeg',gif:'image/gif',webp:'image/webp',bmp:'image/bmp',txt:'text/plain'};
+ const safeTypes=new Set(Object.values(byExtension));
+ return byExtension[extension]||(safeTypes.has(file.type)?file.type:'');
+}
+window.openDocument=async function(id,idx){
+ const d=documents.filter(x=>x.caseId===id)[idx];if(!d)return;
+ if(!d.blobKey){demoOpen(id,idx);return;}
+ const tab=window.open('about:blank','_blank');
+ if(!tab){alert('Il browser ha bloccato la nuova scheda. Consenti i popup per questo sito oppure usa Scarica.');return;}
+ let url;
+ try{
+  tab.opener=null;
+  tab.document.title='Apertura documento';
+  tab.document.body.textContent='Apertura del documento in corso…';
+  const file=await blobStore('readonly',d.blobKey);
+  if(!file)throw Error('File non disponibile in questo browser.');
+  const mime=previewMime(file,d.name);
+  if(!mime)throw Error('Questo formato non ha un’anteprima nel browser. Usa Scarica per aprirlo con il programma adatto.');
+  if(tab.closed)return;
+  const preview=file.type===mime?file:file.slice(0,file.size,mime);
+  url=URL.createObjectURL(preview);tab.location.replace(url);
+  const cleanup=setInterval(()=>{if(tab.closed){clearInterval(cleanup);URL.revokeObjectURL(url);}},5000);
+ }catch(e){if(url)URL.revokeObjectURL(url);if(!tab.closed)tab.close();alert(e.message);}
+};
+window.downloadDocument=async function(id,idx){
+ const d=documents.filter(x=>x.caseId===id)[idx];if(!d||!d.blobKey)return;
+ try{
+  const file=await blobStore('readonly',d.blobKey);if(!file)throw Error('File non disponibile in questo browser.');
+  const url=URL.createObjectURL(file),a=document.createElement('a');a.href=url;a.download=d.name;
+  document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),30000);
+ }catch(e){alert(e.message);}
 };
 document.querySelector('[data-view="documenti"]').addEventListener('click',()=>{selectedCase='';selectedFolder='';renderDocuments();});
 
