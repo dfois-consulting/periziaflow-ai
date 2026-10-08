@@ -1,14 +1,6 @@
 function esc(v){return String(v ?? "").replace(/[&<>"']/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c]));}
 
-const seedCases = [
-  {id:"PR-2026-0001", claim:"45687322", company:"Generali", insured:"Mario Rossi", type:"Danni da acqua", expert:"Luca Bianchi", status:"In attesa documentazione", days:12, amount:3850, created:"12/09/2026"},
-  {id:"PR-2026-0002", claim:"77893114", company:"Allianz", insured:"Laura Esposito", type:"Evento atmosferico", expert:"Marco Riva", status:"Perizia in lavorazione", days:7, amount:6200, created:"17/09/2026"},
-  {id:"PR-2026-0003", claim:"99321007", company:"Unipol", insured:"Paolo Conti", type:"Incendio", expert:"Sara Villa", status:"Da verificare", days:4, amount:14200, created:"20/09/2026"},
-  {id:"PR-2026-0004", claim:"78124568", company:"Generali", insured:"Anna Colombo", type:"RC", expert:"", status:"Da assegnare", days:1, amount:0, created:"23/09/2026"},
-  {id:"PR-2026-0005", claim:"66220984", company:"Zurich", insured:"Enrico Sala", type:"Furto", expert:"Davide Neri", status:"Cliente da contattare", days:3, amount:5300, created:"21/09/2026"},
-  {id:"PR-2026-0006", claim:"88712044", company:"Allianz", insured:"Chiara Romano", type:"Danni da acqua", expert:"Luca Bianchi", status:"Chiusa", days:9, amount:2780, created:"14/09/2026"},
-  {id:"PR-2026-0007", claim:"55018221", company:"Unipol", insured:"Stefano Greco", type:"Evento atmosferico", expert:"Marco Riva", status:"Perizia da inviare", days:6, amount:8400, created:"18/09/2026"}
-];
+const seedCases = JSON.parse(JSON.stringify(window.demoTemplate.cases));
 
 const experts = [
   {name:"Luca Bianchi", zone:"Milano / Monza", spec:"Danni acqua / RC", open:18, avg:"4,2 gg", availability:"Alta"},
@@ -17,48 +9,22 @@ const experts = [
   {name:"Davide Neri", zone:"Milano Ovest", spec:"Furti / RC", open:21, avg:"4,8 gg", availability:"Media"}
 ];
 
-const assignments = [
-  {company:"Generali", claim:"78564521", insured:"Franco Sala", city:"Monza", type:"Danni da acqua", confidence:98},
-  {company:"Allianz", claim:"99124567", insured:"Marta Ferri", city:"Sesto San Giovanni", type:"Evento atmosferico", confidence:95},
-  {company:"Unipol", claim:"88211034", insured:"Gianni Moretti", city:"Desio", type:"RC", confidence:92}
-];
+const assignments = JSON.parse(JSON.stringify(window.demoTemplate.assignments));
 
-const emails = [
-  {subject:"Sinistro 45687322 - documentazione integrativa", from:"cliente@example.it", class:"Nuova documentazione", caseId:"PR-2026-0001", time:"10:42"},
-  {subject:"Richiesta integrazione pratica 99321007", from:"claims@compagnia.it", class:"Richiesta integrazione", caseId:"PR-2026-0003", time:"09:55"},
-  {subject:"Nuovo incarico peritale 78564521", from:"incarichi@compagnia.it", class:"Nuovo incarico", caseId:"", time:"09:21"},
-  {subject:"Fattura compensi settembre", from:"luca.bianchi@periti.it", class:"Fattura", caseId:"", time:"08:48"}
-];
+const emails = JSON.parse(JSON.stringify(window.demoTemplate.emails));
 
-const documents = [
-  {name:"Relazione_peritale_99321007.pdf", caseId:"PR-2026-0003", type:"Relazione", date:"24/09/2026"},
-  {name:"Preventivo_riparazione_45687322.pdf", caseId:"PR-2026-0001", type:"Preventivo", date:"24/09/2026"},
-  {name:"Foto_sopralluogo_77893114.zip", caseId:"PR-2026-0002", type:"Fotografie", date:"23/09/2026"},
-  {name:"Verbale_RC_55018221.pdf", caseId:"PR-2026-0007", type:"Verbale", date:"23/09/2026"},
-  {name:"Incarico_compagnia_45687322.pdf", caseId:"PR-2026-0001", type:"Incarico compagnia", date:"12/09/2026"},
-  {name:"Foto_sopralluogo_45687322.zip", caseId:"PR-2026-0001", type:"Fotografie", date:"14/09/2026"}
-];
+const documents = JSON.parse(JSON.stringify(window.demoTemplate.documents));
 
-const deadlines = [
-  {caseId:"PR-2026-0001", text:"Documentazione cliente mancante", due:"Oggi", severity:"red"},
-  {caseId:"PR-2026-0005", text:"Cliente non ancora contattato", due:"Oggi", severity:"orange"},
-  {caseId:"PR-2026-0002", text:"Relazione da completare", due:"Domani", severity:"orange"},
-  {caseId:"PR-2026-0007", text:"Perizia pronta da inviare", due:"Oggi", severity:"blue"}
-];
+const deadlines = []; // Le attività operative sono gestite da scadenze.js.
 
-const payments = [
-  {expert:"Luca Bianchi", cases:12, amount:1680, invoice:"FT 88/2026", due:"30/09/2026", status:"Da pagare"},
-  {expert:"Marco Riva", cases:16, amount:2340, invoice:"FT 41/2026", due:"02/10/2026", status:"Approvato"},
-  {expert:"Sara Villa", cases:8, amount:1920, invoice:"FT 57/2026", due:"05/10/2026", status:"Da verificare"},
-  {expert:"Davide Neri", cases:10, amount:1490, invoice:"FT 102/2026", due:"30/09/2026", status:"Pagamento predisposto"}
-];
+const payments = JSON.parse(JSON.stringify(window.demoTemplate.payments));
 
 let cases = JSON.parse(localStorage.getItem("pf_cases") || "null") || seedCases;
 
 const titles = {
   dashboard:["Dashboard","Panoramica operativa dell'agenzia"],
   pratiche:["Pratiche","Ricerca, filtri e gestione delle pratiche"],
-  incarichi:["Nuovi incarichi","Incarichi estratti automaticamente da email o portali"],
+  incarichi:["Nuovi incarichi","Esempi simulati di incarichi da email o portali"],
   email:["Email","Classificazione e collegamento alle pratiche"],
   periti:["Periti","Carico di lavoro, zone e disponibilità"],
   documenti:["Documenti","Archivio documentale centralizzato"],
@@ -85,7 +51,7 @@ function renderKPIs(){
     ["Pratiche aperte",open,"Totale attualmente in lavorazione"],
     ["Da assegnare",unassigned,"Richiedono un perito"],
     ["Ferme > 7 giorni",stalled,"Da verificare con priorità"],
-    ["Chiuse da fatturare",toBill,"Demo V1"]
+    ["Pratiche chiuse",toBill,"Chiusura perizia, indipendente dalla liquidazione"]
   ];
   document.querySelector("#kpiCards").innerHTML = items.map(x=>`
     <div class="card"><div class="label">${x[0]}</div><div class="value">${x[1]}</div><div class="sub">${x[2]}</div></div>
@@ -109,15 +75,8 @@ function renderKPIs(){
       </div>
     `).join("");
 
-  const activities = [
-    "Perizia caricata su PR-2026-0003",
-    "Email collegata automaticamente a PR-2026-0001",
-    "Nuovo incarico rilevato: sinistro 78564521",
-    "Pagamento predisposto per Davide Neri"
-  ];
-  document.querySelector("#activityFeed").innerHTML = activities.map((a,i)=>`
-    <div class="list-row"><div>${a}<div class="meta">${["11:04","10:42","09:21","08:35"][i]}</div></div></div>
-  `).join("");
+  const activities = cases.flatMap(c=>(c.notes||[]).map(n=>({text:`${c.claim} · ${n.text}`,date:n.date}))).slice(-4).reverse();
+  document.querySelector("#activityFeed").innerHTML = activities.map(a=>`<div class="list-row"><div>${esc(a.text)}<div class="meta">${esc(a.date)}</div></div></div>`).join("") || '<p class="empty-state">Nessuna nota registrata.</p>';
 }
 
 function populateFilters(){
@@ -158,8 +117,8 @@ function renderCases(){
 function renderAssignments(){
   document.querySelector("#assignmentsList").innerHTML = assignments.map((a,i)=>`
     <div class="assignment" id="assign-${i}">
-      <strong>Nuovo incarico rilevato</strong>
-      <div class="meta">Confidenza estrazione dati: ${a.confidence}%</div>
+      <strong>${cases.some(c=>c.company===a.company&&c.claim===a.claim)?"Incarico già acquisito":"Nuovo incarico dimostrativo"}</strong>
+      <div class="meta">Esempio simulato · confidenza illustrativa: ${a.confidence}%</div>
       <div class="assignment-grid">
         <div><span>Compagnia</span><strong>${a.company}</strong></div>
         <div><span>Sinistro</span><strong>${a.claim}</strong></div>
@@ -168,7 +127,7 @@ function renderAssignments(){
         <div><span>Evento</span><strong>${a.type}</strong></div>
       </div>
       <div class="assignment-actions">
-        <button class="primary" onclick="createFromAssignment(${i})">Crea pratica</button>
+        <button class="primary" ${cases.some(c=>c.company===a.company&&c.claim===a.claim)?"disabled":""} onclick="createFromAssignment(${i})">${cases.some(c=>c.company===a.company&&c.claim===a.claim)?"Pratica già presente":"Crea pratica"}</button>
         <button class="secondary">Rivedi dati</button>
       </div>
     </div>
@@ -193,8 +152,8 @@ function renderExperts(){
       <td><strong>${e.name}</strong></td>
       <td>${e.zone}</td>
       <td>${e.spec}</td>
-      <td>${e.open}</td>
-      <td>${e.avg}</td>
+      <td>${cases.filter(c=>c.expert===e.name&&c.status!=="Chiusa").length}</td>
+      <td>Dato demo</td>
       <td><span class="status ${e.availability==="Alta"?"green":"orange"}">${e.availability}</span></td>
     </tr>
   `).join("");
@@ -576,8 +535,8 @@ window.createFromAssignment = function(i){
   const a = assignments[i];
   const next = String(cases.length+1).padStart(4,"0");
   cases.push({
-    id:`PR-2026-${next}`, claim:a.claim, company:a.company, insured:a.insured,
-    type:a.type, expert:"", status:"Da assegnare", days:0, amount:0, created:"24/09/2026"
+    id:`PR-${new Date().getFullYear()}-${crypto.randomUUID().slice(0,8)}`, claim:a.claim, company:a.company, insured:a.insured,
+    type:a.type, expert:"", status:"Da assegnare", days:0, amount:null, created:new Date().toLocaleDateString("it-IT")
   });
   save(); populateFilters(); renderAll();
   document.querySelector(`#assign-${i}`).innerHTML = `<strong>Pratica creata correttamente</strong><div class="meta">Sinistro ${a.claim} inserito in PeriziaFlow.</div>`;
@@ -588,7 +547,7 @@ function addNewCase(ev){
   const fd = new FormData(document.querySelector("#newCaseForm"));
   const next = String(cases.length+1).padStart(4,"0");
   cases.push({
-    id:`PR-2026-${next}`,
+    id:`PR-${new Date().getFullYear()}-${crypto.randomUUID().slice(0,8)}`,
     claim:fd.get("claim"),
     company:fd.get("company"),
     insured:fd.get("insured"),

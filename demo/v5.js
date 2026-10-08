@@ -10,12 +10,8 @@ function dayDiff(a,b){return Math.round((Date.parse(b+'T00:00:00Z')-Date.parse(a
 const options=(items,value)=>items.map(x=>`<option value="${esc(x)}" ${x===value?'selected':''}>${esc(x)}</option>`).join('');
 let selectedCase='', selectedFolder='';
 // Existing records keep their estimates; no historical amount becomes a liquidation.
-cases.forEach(c=>{c.category ||= ['Incendio','Furto'].includes(c.type)?c.type:'Da classificare';c.openedAt ||= isoDate(c.created);c.liquidationStatus ||= 'Non liquidato';});
-if(!localStorage.getItem('pf_cases') && !localStorage.getItem('pf_v5_demo')){
-  const samples=[['RCA',3200,2800,2600],['RCA',5100,4500,4200],['RCT',2100,1800,1500],['RCT',900,0,0]];
-  samples.forEach((s,i)=>cases.push({id:`PR-2026-DEMO${i+1}`,claim:`DEMO-${i+1}`,company:i<2?'Generali':'Allianz',insured:`Caso dimostrativo ${i+1}`,category:s[0],type:'Danni a cose',expert:'Luca Bianchi',status:'Chiusa',days:12+i,created:'01/09/2026',openedAt:'2026-09-01',closedAt:'2026-09-15',amount:s[2],requestedAmount:s[1],assessedAmount:s[2],liquidatedAmount:s[3],liquidationStatus:'Definitiva',liquidatedAt:`2026-09-${20+i}`}));
-  localStorage.setItem('pf_v5_demo','1');
-}
+cases.forEach(c=>{c.category ||= ['Incendio','Furto'].includes(c.type)?c.type:'Da classificare';c.openedAt ||= isoDate(c.created);c.liquidationStatus ||= 'Non liquidato';if(c.openedAt)c.days=Math.max(0,dayDiff(c.openedAt,c.closedAt||today()));});
+
 save();
 let storedDocs;
 try{storedDocs=JSON.parse(localStorage.getItem('pf_documents_v5')||'null');}catch{}
@@ -85,7 +81,7 @@ window.openCase=function(id){oldOpenCase(id);const c=cases.find(x=>x.id===id);if
 };
 window.changeStatus=id=>editCase(id);
 const oldCreate=window.createFromAssignment;
-window.createFromAssignment=function(i){const a=assignments[i];if(cases.some(c=>c.company===a.company&&c.claim===a.claim)){alert('Incarico già presente.');return;}oldCreate(i);const c=cases.at(-1);c.category=['Incendio','Furto'].includes(c.type)?c.type:'Da classificare';c.openedAt=today();c.created=showDate(c.openedAt);c.liquidationStatus='Non liquidato';save();refreshReportFilters();renderDocuments();};
+window.createFromAssignment=function(i){const a=assignments[i];if(cases.some(c=>c.company===a.company&&c.claim===a.claim)){alert('Incarico già presente.');return;}oldCreate(i);const c=cases.at(-1);c.category=a.category||(['Incendio','Furto'].includes(c.type)?c.type:'Da classificare');c.openedAt=today();c.created=showDate(c.openedAt);c.liquidationStatus='Non liquidato';save();refreshReportFilters();renderDocuments();};
 
 // Archive: a stable case identity, folders and optional cross-case search.
 const archiveHead=document.createElement('div');archiveHead.className='toolbar';archiveHead.innerHTML=`<label>Cerca fascicolo o file<input type="search" id="docSearch" placeholder="Sinistro, compagnia, nominativo o file"></label>`;document.querySelector('#documentsList').before(archiveHead);document.querySelector('#docSearch').oninput=()=>{selectedCase='';selectedFolder='';renderDocuments();};
