@@ -6,7 +6,7 @@ const backupSection=document.createElement('section');backupSection.id='backup';
 document.querySelector('.main').append(backupSection);
 backupNav.onclick=()=>{document.querySelectorAll('.nav-item,.view').forEach(el=>el.classList.remove('active'));backupNav.classList.add('active');backupSection.classList.add('active');document.querySelector('#pageTitle').textContent='Backup';document.querySelector('#pageSubtitle').textContent='Esportazione e recupero dei dati locali';};
 const backupStatus=msg=>document.querySelector('#backupMessage').textContent=msg;
-function lockBackup(busy){backupBusy=busy;document.querySelector('#exportBackup').disabled=busy;document.querySelector('#backupFile').disabled=busy;document.querySelector('#restoreBackup').disabled=busy||!backupCandidate;document.querySelector('.sidebar').inert=busy;document.querySelector('.topbar').inert=busy;document.querySelectorAll('.view:not(#backup)').forEach(el=>el.inert=busy);}
+function lockBackup(busy){backupBusy=busy;document.querySelector('#exportBackup').disabled=busy;const demoButton=document.querySelector('#loadCleanDemo');if(demoButton)demoButton.disabled=busy;document.querySelector('#backupFile').disabled=busy;document.querySelector('#restoreBackup').disabled=busy||!backupCandidate;document.querySelector('.sidebar').inert=busy;document.querySelector('.topbar').inert=busy;document.querySelectorAll('.view:not(#backup)').forEach(el=>el.inert=busy);}
 function toBase64(bytes){let result='';for(let i=0;i<bytes.length;i+=32768)result+=String.fromCharCode(...bytes.subarray(i,i+32768));return btoa(result);}
 function fromBase64(text){if(typeof text!=='string'||text.length%4!==0||!/^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$/.test(text))throw Error('Allegato codificato in modo non valido.');const raw=atob(text);return Uint8Array.from(raw,c=>c.charCodeAt(0));}
 async function fileDigest(bytes){return [...new Uint8Array(await crypto.subtle.digest('SHA-256',bytes))].map(x=>x.toString(16).padStart(2,'0')).join('');}
@@ -14,7 +14,7 @@ async function snapshotFiles(keys){if(!keys.length)return new Map();const db=awa
 async function buildFullBackup(){
  const practiceSnapshot=JSON.parse(JSON.stringify(cases)),docSnapshot=JSON.parse(JSON.stringify(documents));const keys=[...new Set(docSnapshot.map(d=>d.blobKey).filter(Boolean))];const stored=await snapshotFiles(keys);const files=[];let total=0;
  for(const key of keys){const blob=stored.get(key);if(!blob)throw Error('Un allegato non è disponibile: '+docSnapshot.find(d=>d.blobKey===key).name+'. Il backup non è stato esportato.');total+=blob.size;if(total>backupLimit)throw Error('Gli allegati superano il limite di 100 MB per backup.');const bytes=new Uint8Array(await blob.arrayBuffer());files.push({key,mime:blob.type||'application/octet-stream',size:bytes.length,sha256:await fileDigest(bytes),base64:toBase64(bytes)});}
- return {format:'PeriziaFlowBackup',version:3,appVersion:'1.9.2',createdAt:new Date().toISOString(),cases:practiceSnapshot,documents:docSnapshot,files};
+ return {format:'PeriziaFlowBackup',version:3,appVersion:'2.0',createdAt:new Date().toISOString(),cases:practiceSnapshot,documents:docSnapshot,files};
 }
 function backupText(value,label,max=10000){if(typeof value!=='string'||value.length>max)throw Error(label+': testo non valido.');return value;}
 function backupId(value,label){backupText(value,label,100);if(!/^[A-Za-z0-9_-]+$/.test(value))throw Error(label+': identificativo non valido.');return value;}
