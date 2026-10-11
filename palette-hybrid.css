@@ -45,3 +45,7 @@ nav a{color:#324355}.hero{background:radial-gradient(circle at 84% 18%,#d6efe6 0
 .roadmap-items b,.footer-inner a{color:#0d8b85}
 footer{background:#0e2037}.footer-inner p,.footer-inner small,.footer-inner a{color:#d6dde6}
 @media (max-width:900px){.site-header{background:rgba(250,247,242,.97)}}
+
+/* Contrasto del marchio nel footer */
+footer .brand strong { color: #ffffff; }
+footer .brand small { color: #cdd9e5; }
